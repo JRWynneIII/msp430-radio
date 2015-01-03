@@ -132,42 +132,32 @@ int getTemp()
   return (int)((t*27069L - 18169625L) >> 16);       //Convert value 
 }
 
-void itoa( int val, char *s )
+char* itoa(int value, char* str, int radix) 
 {
-  char *p;
-  unsigned char d, i;
-  unsigned char zero;
-  unsigned int test;
-  unsigned int uval = val;
-  
-
-  p = s;
-  
-  if( val < 0 ){
-    uval = -val;
-    *p++ = '-';
-  }
-
-  zero = 1;
-
-  i = 4;
-  do{
-    i--;   
-    if ( i==0) test = 10;
-    else if ( i==1) test=100;
-    else if ( i==2) test=1000;
-    else test=10000;
-
-    for( d = '0'; uval >= test; uval -= test )
+    static char dig[] =
+        "0123456789"
+        "abcdefghijklmnopqrstuvwxyz";
+    int n = 0, neg = 0;
+    unsigned int v;
+    char* p, *q;
+    char c;
+    if (radix == 10 && value < 0) 
     {
-      d++;
-      zero = 0;
+        value = -value;
+        neg = 1;
     }
-    if( zero == 0 )
-      *p++ = d ;
-  }while( i );
-
-  *p++ = (unsigned char)uval + '0';
+    v = value;
+    do 
+    {
+        str[n++] = dig[v%radix];
+        v /= radix;
+    } while (v);
+    if (neg)
+        str[n++] = '-';
+    str[n] = '\0';
+    for (p = str, q = p + n/2; p != q; ++p, --q)
+        c = *p, *p = *q, *q = c;
+    return str;
 }
 
 int main(void)
@@ -182,8 +172,7 @@ int main(void)
   {
     __delay_cycles(500);
     temp = getTemp();
-    itoa(temp,str);
-    dot();
+    itoa(temp,str,10);
     __delay_cycles(500);
     morseStrOut(str);
   }
